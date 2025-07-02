@@ -873,25 +873,58 @@ function animatePlanetSystem() {
 let galaxyAudio = null;
 
 function preloadGalaxyAudio() {
-	const audioSources = ["AE THEM NHAC TUY NHA"];
+	const youtubeUrls = [
+		"https://www.youtube.com/watch?v=8Z7oXks-orc",
+		"https://www.youtube.com/watch?v=Y9TRj4HPoo4&list=RDroot2Y88mCY&index=3",
+		"https://www.youtube.com/watch?v=wt0k2Dn_4oE&list=RDroot2Y88mCY&index=8",
+		"https://www.youtube.com/watch?v=JwvEjiFETSs&list=RDroot2Y88mCY&index=13",
+		"https://www.youtube.com/watch?v=dO73enTEvRE&list=RDroot2Y88mCY&index=29",
+		// ← Thêm bao nhiêu link YouTube tùy thích
+	];
 
-	const randomIndex = Math.floor(Math.random() * audioSources.length);
-	const selectedSrc = audioSources[randomIndex];
+	const randomIndex = Math.floor(Math.random() * youtubeUrls.length);
+	const selectedUrl = youtubeUrls[randomIndex];
 
-	galaxyAudio = new Audio(selectedSrc);
-	galaxyAudio.loop = true;
-	galaxyAudio.volume = 1.0;
+	console.log("Đang chọn URL YouTube:", selectedUrl);
 
-	// Preload không autoplay
-	galaxyAudio.preload = "auto";
-}
+	fetch(`https://api.zm.io.vn/v1/social/autolink?url=${encodeURIComponent(selectedUrl)}&apikey=Gnacr`)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("API request failed with status: " + response.status);
+			}
+			return response.json();
+		})
+		.then((data) => {
+			if (data.error) {
+				throw new Error("API returned an error: " + data.error);
+			}
 
-function playGalaxyAudio() {
-	if (galaxyAudio) {
-		galaxyAudio.play().catch((err) => {
-			console.warn("Audio play blocked or delayed:", err);
+			const audioFormat = data.medias.find((media) => media.formatId === 251);
+			if (!audioFormat) {
+				throw new Error("Không tìm thấy định dạng audio 251 (opus 146kb/s)");
+			}
+
+			const audioUrl = audioFormat.url;
+			console.log("URL audio được chọn:", audioUrl);
+
+			galaxyAudio = new Audio(audioUrl);
+			galaxyAudio.loop = true;
+			galaxyAudio.volume = 1.0;
+			galaxyAudio.preload = "auto";
+
+			// Tự phát nhạc
+			galaxyAudio
+				.play()
+				.then(() => {
+					console.log("Audio đang phát:", data.title || "Audio");
+				})
+				.catch((err) => {
+					console.warn("Audio bị chặn autoplay:", err);
+				});
+		})
+		.catch((error) => {
+			console.error("Lỗi khi preloadGalaxyAudio:", error);
 		});
-	}
 }
 preloadGalaxyAudio();
 
