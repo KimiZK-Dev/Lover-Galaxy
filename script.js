@@ -1200,45 +1200,66 @@ function animate() {
 
 	renderer.render(scene, camera);
 }
+
 function createHintText() {
-	const canvasSize = 512;
+	const canvasWidth = 2048;
+	const canvasHeight = 1024;
 	const canvas = document.createElement("canvas");
-	canvas.width = canvas.height = canvasSize;
-	const context = canvas.getContext("2d");
-	const fontSize = 50;
+	canvas.width = canvasWidth;
+	canvas.height = canvasHeight;
+
+	const ctx = canvas.getContext("2d");
+
 	const text = "Chạm Vào Tinh Cầu";
-	context.font = `bold ${fontSize}px Arial, sans-serif`;
-	context.textAlign = "center";
-	context.textBaseline = "middle";
-	context.shadowColor = "#ffb3de";
-	context.shadowBlur = 5;
-	context.lineWidth = 2;
-	context.strokeStyle = "rgba(255, 200, 220, 0.8)";
-	context.strokeText(text, canvasSize / 2, canvasSize / 2);
-	context.shadowColor = "#e0b3ff";
-	context.shadowBlur = 5;
-	context.lineWidth = 2;
-	context.strokeStyle = "rgba(220, 180, 255, 0.5)";
-	context.strokeText(text, canvasSize / 2, canvasSize / 2);
-	context.shadowColor = "transparent";
-	context.shadowBlur = 0;
-	context.fillStyle = "white";
-	context.fillText(text, canvasSize / 2, canvasSize / 2);
-	const textTexture = new THREE.CanvasTexture(canvas);
-	textTexture.needsUpdate = true;
-	const textMaterial = new THREE.MeshBasicMaterial({
-		map: textTexture,
+	const fontSize = 160;
+
+	// Cài đặt font
+	ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
+
+	const centerX = canvasWidth / 2;
+	const centerY = canvasHeight / 2 + 30; // Căn xuống nhẹ cho đẹp
+
+	// === STROKE GLOW ===
+	ctx.shadowColor = "#e0b3ff";
+	ctx.shadowBlur = 22;
+	ctx.lineWidth = 9;
+	ctx.strokeStyle = "#ffffff";
+	ctx.strokeText(text, centerX, centerY);
+
+	// === FILL GLOW ===
+	ctx.shadowColor = "#ffb3de";
+	ctx.shadowBlur = 30;
+	ctx.fillStyle = "#ffffff";
+	ctx.fillText(text, centerX, centerY);
+
+	// === Tạo texture Three.js ===
+	const texture = new THREE.CanvasTexture(canvas);
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
+	texture.wrapS = THREE.ClampToEdgeWrapping;
+	texture.wrapT = THREE.ClampToEdgeWrapping;
+	texture.needsUpdate = true;
+
+	const material = new THREE.MeshBasicMaterial({
+		map: texture,
 		transparent: true,
 		side: THREE.DoubleSide,
+		depthWrite: false,
 	});
-	const planeGeometry = new THREE.PlaneGeometry(16, 8);
-	hintText = new THREE.Mesh(planeGeometry, textMaterial);
+
+	// Kích thước phù hợp với text
+	const aspectRatio = canvasWidth / canvasHeight;
+	const planeWidth = 24;
+	const planeHeight = planeWidth / aspectRatio;
+
+	hintText = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
 	hintText.position.set(0, 15, 0);
 	scene.add(hintText);
 }
 
 // ---- CÁC HÀM XỬ LÝ SỰ KIỆN VÀ KHỞI ĐỘNG ----
-
 createShootingStar();
 createHintIcon(); // Gọi hàm tạo icon
 createHintText();
