@@ -80,7 +80,7 @@ const galaxyParameters = {
 	outsideColor: new THREE.Color(0x48b8b8),
 };
 
-const defaultHeartImages = Array.from({ length: 6 }, (_, i) => `images/img${i + 1}.jpg`);
+const defaultHeartImages = Array.from({ length: 2 }, (_, i) => `images/img${i + 1}.jpg`);
 
 const heartImages = [...(window.dataCCD?.data?.heartImages || []), ...defaultHeartImages];
 
@@ -651,10 +651,10 @@ scene.add(planet);
 
 // ---- TẠO CÁC VÒNG CHỮ QUAY QUANH HÀNH TINH ----
 const ringTexts = [
-	"My World",
-	"Lê Huyền Trang",
-	"Nguyễn Hữu Bách",
-	"23/04/2025",
+	"Việt Nam",
+	"Cao Chung Đạt",
+	"Nguyễn Ngọc Yến Nhi",
+	"20/03/2005",
 	...(window.dataCCD && window.dataCCD.data.ringTexts ? window.dataCCD.data.ringTexts : []),
 ];
 
@@ -744,35 +744,31 @@ function createTextRings() {
 		const ctx = textCanvas.getContext("2d");
 
 		ctx.clearRect(0, 0, textCanvas.width, textureHeight);
-
-		// Cài đặt font
 		ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+		ctx.fillStyle = "white";
 		ctx.textAlign = "left";
 		ctx.textBaseline = "alphabetic";
 
-		// Viền ngoài chữ (stroke) với pastel glow
-		ctx.shadowColor = "#C0C9EE"; // Glow viền: xanh nhạt pastel
+		// Hiệu ứng glow cho viền chữ
+		ctx.shadowColor = "#e0b3ff";
 		ctx.shadowBlur = 18;
-		ctx.lineWidth = 6;
-		ctx.strokeStyle = "#A2AADB"; // Viền chữ: xanh tím pastel
-		ctx.strokeText(fullText, 0, textureHeight * 0.82);
+		ctx.lineWidth = 7;
+		ctx.strokeStyle = "#fff";
+		ctx.strokeText(fullText, 0, textureHeight * 0.82); // căn dòng thấp hơn
 
-		// Fill chữ (nội dung) với pastel glow
-		ctx.shadowColor = "#FFF2E0"; // Glow fill: kem sáng dịu
-		ctx.shadowBlur = 25;
-		ctx.fillStyle = "#898AC4"; // Fill chữ: tím pastel
+		// Hiệu ứng glow cho phần fill
+		ctx.shadowColor = "#ffb3de";
+		ctx.shadowBlur = 24;
+		ctx.fillStyle = "#fff";
 		ctx.fillText(fullText, 0, textureHeight * 0.84);
 
-		// Tạo texture từ canvas
 		const ringTexture = new THREE.CanvasTexture(textCanvas);
 		ringTexture.wrapS = THREE.RepeatWrapping;
 		ringTexture.repeat.x = finalTextureWidth / textureWidthCircumference;
 		ringTexture.needsUpdate = true;
 
-		// Tạo hình trụ để quấn text
 		const ringGeometry = new THREE.CylinderGeometry(ringRadius, ringRadius, 1, 128, 1, true);
 
-		// Material hiển thị text
 		const ringMaterial = new THREE.MeshBasicMaterial({
 			map: ringTexture,
 			transparent: true,
@@ -782,7 +778,6 @@ function createTextRings() {
 			depthWrite: false,
 		});
 
-		// Gắn text vào scene
 		const textRingMesh = new THREE.Mesh(ringGeometry, ringMaterial);
 		textRingMesh.position.set(0, 0, 0);
 		textRingMesh.rotation.y = Math.PI / 2;
@@ -872,20 +867,19 @@ function animatePlanetSystem() {
 
 let galaxyAudio = null;
 
-function preloadGalaxyAudio() {
-	const youtubeUrls = [
+function playGalaxyAudio() {
+	const youtubeLinks = [
 		"https://www.youtube.com/watch?v=8Z7oXks-orc",
 		"https://www.youtube.com/watch?v=Y9TRj4HPoo4&list=RDroot2Y88mCY&index=3",
 		"https://www.youtube.com/watch?v=wt0k2Dn_4oE&list=RDroot2Y88mCY&index=8",
 		"https://www.youtube.com/watch?v=JwvEjiFETSs&list=RDroot2Y88mCY&index=13",
 		"https://www.youtube.com/watch?v=dO73enTEvRE&list=RDroot2Y88mCY&index=29",
-		// ← Thêm bao nhiêu link YouTube tùy thích
 	];
 
-	const randomIndex = Math.floor(Math.random() * youtubeUrls.length);
-	const selectedUrl = youtubeUrls[randomIndex];
+	const randomIndex = Math.floor(Math.random() * youtubeLinks.length);
+	const selectedUrl = youtubeLinks[randomIndex];
 
-	console.log("Đang chọn URL YouTube:", selectedUrl);
+	console.log("Đang lấy nhạc từ:", selectedUrl);
 
 	fetch(`https://api.zm.io.vn/v1/social/autolink?url=${encodeURIComponent(selectedUrl)}&apikey=Gnacr`)
 		.then((response) => {
@@ -901,32 +895,27 @@ function preloadGalaxyAudio() {
 
 			const audioFormat = data.medias.find((media) => media.formatId === 251);
 			if (!audioFormat) {
-				throw new Error("Không tìm thấy định dạng audio 251 (opus 146kb/s)");
+				throw new Error("Không tìm thấy định dạng audio 251 (Opus 146kbps)");
 			}
 
 			const audioUrl = audioFormat.url;
-			console.log("URL audio được chọn:", audioUrl);
+			console.log("Gán src cho #bg-music:", audioUrl);
 
-			galaxyAudio = new Audio(audioUrl);
-			galaxyAudio.loop = true;
-			galaxyAudio.volume = 1.0;
-			galaxyAudio.preload = "auto";
-
-			// Tự phát nhạc
-			galaxyAudio
-				.play()
-				.then(() => {
-					console.log("Audio đang phát:", data.title || "Audio");
-				})
-				.catch((err) => {
-					console.warn("Audio bị chặn autoplay:", err);
-				});
+			const audioElement = document.getElementById("bg-music");
+			if (audioElement) {
+				audioElement.src = audioUrl;
+				audioElement.load(); // bắt đầu preload
+			} else {
+				console.warn("Không tìm thấy phần tử #bg-music");
+			}
 		})
 		.catch((error) => {
-			console.error("Lỗi khi preloadGalaxyAudio:", error);
+			console.error("Lỗi khi preload nhạc:", error);
+			FuiToast?.error?.(`Lỗi khi tải nhạc: ${error.message}`);
 		});
 }
-preloadGalaxyAudio();
+
+playGalaxyAudio();
 
 // ---- VÒNG LẶP ANIMATE ----
 let fadeOpacity = 0.1;
