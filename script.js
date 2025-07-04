@@ -915,7 +915,7 @@ function playGalaxyAudio() {
 		});
 }
 
-playGalaxyAudio();
+// playGalaxyAudio();
 
 // ---- VÒNG LẶP ANIMATE ----
 let fadeOpacity = 0.1;
