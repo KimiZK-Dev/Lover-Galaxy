@@ -881,7 +881,7 @@ function playGalaxyAudio() {
 
 	console.log("Đang lấy nhạc từ:", selectedUrl);
 
-	fetch(`https://api.zm.io.vn/v1/social/autolink?url=${encodeURIComponent(selectedUrl)}&apikey=Gnacr`)
+	fetch(`https://api.zm.io.vn/v1/social/autolink?url=${encodeURIComponent(selectedUrl)}&apikey=fHCME`)
 		.then((response) => {
 			if (!response.ok) {
 				throw new Error("API request failed with status: " + response.status);
