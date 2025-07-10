@@ -881,11 +881,7 @@ function playGalaxyAudio() {
 
 	console.log("Đang lấy nhạc từ:", selectedUrl);
 
-<<<<<<< HEAD
 	fetch(`https://trongthao.tech/api/youtube?url=${encodeURIComponent(selectedUrl)}`)
-=======
-	fetch(`https://api.zm.io.vn/v1/social/autolink?url=${encodeURIComponent(selectedUrl)}&apikey=fHCME`)
->>>>>>> fcaa8ed3157cd569550bf5457035a44eb2d29fe2
 		.then((response) => {
 			if (!response.ok) {
 				throw new Error("API request failed with status: " + response.status);
@@ -900,7 +896,6 @@ function playGalaxyAudio() {
 			// Find audio format with formatId === 251, or fallback to any audio format
 			let audioFormat = data.api.mediaItems.find((media) => media.mediaId === "251");
 			if (!audioFormat) {
-<<<<<<< HEAD
 				audioFormat = data.api.mediaItems.find((media) => media.type === "Audio");
 				if (!audioFormat) {
 					throw new Error("No audio format found");
@@ -932,21 +927,6 @@ function playGalaxyAudio() {
 						console.warn("Không tìm thấy phần tử #bg-music");
 					}
 				});
-=======
-				throw new Error("Không tìm thấy định dạng audio 251 (Opus 146kbps)");
-			}
-
-			const audioUrl = audioFormat.url;
-			console.log("Gán src cho #bg-music:", audioUrl);
-
-			const audioElement = document.getElementById("bg-music");
-			if (audioElement) {
-				audioElement.src = audioUrl;
-				audioElement.load(); // bắt đầu preload
-			} else {
-				console.warn("Không tìm thấy phần tử #bg-music");
-			}
->>>>>>> fcaa8ed3157cd569550bf5457035a44eb2d29fe2
 		})
 		.catch((error) => {
 			console.error("Lỗi khi preload nhạc:", error);
